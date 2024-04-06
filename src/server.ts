@@ -1,42 +1,58 @@
-import express, {
-  Express,
-  Request,
-  Response,
-  NextFunction,
-} from "express";
+import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
-import { buildSchema } from "graphql";
-import { createHandler } from "graphql-http/lib/use/express";
+import db from "./db/db";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import http from "http";
+import { resolvers, typeDefs } from "./graphql";
 
 dotenv.config();
 
-const schema = buildSchema(`
-type Query {
-  hello: String
-  index: String
-}`);
+interface AuthContext {
+  token?: string;
+}
 
-const root = {
-  index: () => {
-    return "API endpoint.";
-  },
-  hello: () => {
-    return "Hello world!";
-  },
-};
+const app = express();
 
-const app: Express = express();
-const port = process.env.PORT || 3001;
+const httpServer = http.createServer(app);
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(`[server]: ${req.method} ${req.url}`);
-  next();
-});
+async function bootstrapServer() {
+  await db.connect();
 
-app.all("/api", createHandler({ schema, rootValue: root }));
+  const server = new ApolloServer<AuthContext>({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  });
 
-app.listen(port, () => {
-  console.log(
-    `[server]: Server is running at http://localhost:${port}`
+  await server.start();
+
+  //middleware
+  app.use(
+    "/graphql",
+    cors(),
+    express.json(),
+    expressMiddleware(server)
   );
-});
+
+  app.use(
+    "/",
+    cors<cors.CorsRequest>(),
+    express.json(),
+
+    expressMiddleware(server, {
+      context: async ({ req }) => ({ token: req.headers.token }),
+    })
+  );
+
+  await new Promise<void>((resolve) =>
+    httpServer.listen({ port: process.env.PORT }, resolve)
+  );
+  console.log(
+    `Server ready at http://localhost:${process.env.PORT}/`
+  );
+}
+
+bootstrapServer();
