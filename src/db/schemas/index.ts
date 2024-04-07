@@ -48,6 +48,7 @@ async function updateUser(id: string, name: string, email: string) {
 
 async function deleteUser(id: string) {
   await pool.query("DELETE FROM users WHERE id = $1", [id]);
+  return { id };
 }
 
 async function loginUser(email: string, password: string) {
@@ -70,7 +71,10 @@ async function loginUser(email: string, password: string) {
 
   const token = sign(
     { id: user.id },
-    process.env.JWT_SECRET || "default-secret"
+    process.env.JWT_SECRET || "default-secret",
+    {
+      expiresIn: "1h",
+    }
   );
   delete user.password;
 

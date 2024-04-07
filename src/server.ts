@@ -7,11 +7,12 @@ import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import http from "http";
 import { resolvers, typeDefs } from "./graphql";
+import { contextFactory } from "./graphql/contextFactory";
 
 dotenv.config();
 
 interface AuthContext {
-  token?: string;
+  token?: String;
 }
 
 const app = express();
@@ -34,16 +35,8 @@ async function bootstrapServer() {
     "/graphql",
     cors(),
     express.json(),
-    expressMiddleware(server)
-  );
-
-  app.use(
-    "/",
-    cors<cors.CorsRequest>(),
-    express.json(),
-
     expressMiddleware(server, {
-      context: async ({ req }) => ({ token: req.headers.token }),
+      context: async ({ req }) => contextFactory(req),
     })
   );
 

@@ -6,20 +6,27 @@
    }
 
    input UserInput {
-    name: String!
+    name: String
     email: String!
     password: String!
+   }
+
+   type AuthPayload {
+      token: String
+      user: User
    }
 
    type Query {
     users: [User!]!
     user(id: ID!): User
+    me: User
    }
 
    type Mutation {
     createUser(input: UserInput!): User!
     updateUser(id: ID!, user: UserInput): User!
-    deleteUser(id: ID!): User!
+    deleteUser(id: ID!): String!
+    login(input: UserInput!): AuthPayload
    }
 
 
