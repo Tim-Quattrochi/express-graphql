@@ -7,7 +7,8 @@
     "build": "rm -rf ./dist && tsc",
     "start": "node ./dist/src/server.js",
     "dev": "nodemon",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts"
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +22,7 @@
     "express": "^4.19.2",
     "graphql": "^16.8.1",
     "jsonwebtoken": "^9.0.2",
+    "node-pg-migrate": "^6.2.2",
     "pg": "^8.11.5"
   },
   "devDependencies": {
