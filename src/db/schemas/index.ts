@@ -1,22 +1,13 @@
 import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
 import { pool } from "../db";
 import { compare, hash } from "bcrypt";
 import { sign } from "jsonwebtoken";
 
 dotenv.config();
 
-async function createSchema() {
-  const createSchemaSql = fs
-    .readFileSync(path.join(__dirname, "user.sql"))
-    .toString();
-  await pool.query(createSchemaSql);
-}
-
 async function getUserById(id: string) {
   const res = await pool.query(
-    'SELECT id, name, email FROM "user" WHERE id = $1',
+    'SELECT id, name, email FROM "users" WHERE id = $1',
     [id]
   );
 
@@ -31,7 +22,7 @@ async function createUser(
   const hashedPassword = await hash(password, 10);
 
   const res = await pool.query(
-    'INSERT INTO "user" (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
+    'INSERT INTO "users" (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
     [name, email, hashedPassword]
   );
 
@@ -53,7 +44,7 @@ async function deleteUser(id: string) {
 
 async function loginUser(email: string, password: string) {
   const res = await pool.query(
-    'SELECT * FROM "user" WHERE email = $1',
+    'SELECT * FROM "users" WHERE email = $1',
     [email]
   );
 
@@ -81,11 +72,4 @@ async function loginUser(email: string, password: string) {
   return { user, token };
 }
 
-export {
-  createSchema,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser,
-  loginUser,
-};
+export { getUserById, createUser, updateUser, deleteUser, loginUser };
