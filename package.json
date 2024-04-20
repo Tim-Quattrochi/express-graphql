@@ -8,7 +8,9 @@
     "start": "node ./dist/src/server.js",
     "dev": "nodemon",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts"
+    "migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts",
+    "migrate:up": "ts-node node_modules/node-pg-migrate/bin/node-pg-migrate up",
+    "migrate:down": "ts-node node_modules/node-pg-migrate/bin/node-pg-migrate down"
   },
   "author": "",
   "license": "ISC",
